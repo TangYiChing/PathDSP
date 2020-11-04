@@ -13,7 +13,7 @@ Explainable Drug Sensitivity Prediction through Cancer Pathway Enrichment Scores
 # Usage:
 ```python
 # run FNN 
-python FNN.py -i inputs.txt -o ./output_prefix
+python ./PathDSP/PathDSP/FNN.py -i inputs.txt -o ./output_prefix
 ```
 # Data preprocessing
 Pathway enrichment scores for categorical data (i.e., mutation, copy number variation, and drug targets) were obtained by running the NetPEA algorithm, which is available at: https://github.com/TangYiChing/NetPEA, while pathway enrichment scores for numeric data (i.e., gene expression) was generated with the single-sample Gene Set Enrichment Analsysis (ssGSEA) available here: https://gseapy.readthedocs.io/en/master/gseapy_example.html#3)-command-line-usage-of-single-sample-gseaby 
