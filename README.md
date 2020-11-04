@@ -15,7 +15,8 @@ Explainable Drug Sensitivity Prediction through Cancer Pathway Enrichment Scores
 # run FNN 
 python FNN.py -i inputs.txt -o ./output_prefix
 ```
-# Obtain pathway enrichment scores from gene expression, mutation, copy number variation, and drug target data 
+# Data preprocessing
+Pathway enrichment scores for categorical data (e.g., mutation, copy number variation, and drug targets) was obtained from NetPEA, which is available at: 
 
 step1. performe 
 
