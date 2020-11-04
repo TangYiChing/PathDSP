@@ -15,6 +15,9 @@ Explainable Drug Sensitivity Prediction through Cancer Pathway Enrichment Scores
 # run FNN 
 python FNN.py -i inputs.txt -o ./output_prefix
 ```
+# Obtain pathway enrichment scores from gene expression, mutation, copy number variation, and drug target data 
+
+step1. performe 
 
 
 # Reference
