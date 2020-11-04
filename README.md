@@ -21,3 +21,5 @@ Pathway enrichment scores for categorical data (i.e., mutation, copy number vari
 
 # Reference
 Li, M., Wang, Y., Zheng, R., Shi, X., li,  yaohang, Wu, F., & Wang, J. (2019). DeepDSC: A Deep Learning Method to Predict Drug Sensitivity of Cancer Cell Lines. IEEE/ACM Transactions on Computational Biology and Bioinformatics, 1–1.
+
+Buitinck, L., Louppe, G., Blondel, M., Pedregosa, F., Mueller, A., Grisel, O., … Grobler, J. (2013). API design for machine learning software: experiences from the scikit-learn project. In European Conference on Machine Learning and Principles and Practices of Knowledge Discovery in Databases.
