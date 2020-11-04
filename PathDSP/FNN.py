@@ -117,41 +117,6 @@ def fit(net, train_dl, valid_dl, epochs, learning_rate, device, opt_fn):
 
     return  net, trainloss_list, validloss_list
 
-def train(net, train_dl,  epochs, learning_rate, device, opt_fn):
-    """
-    Return train loss and trained model
-    """
-    ## setup
-    criterion = RMSELoss() #tch.nn.MSELoss() # setup LOSS function
-    optimizer = opt_fn(net.parameters(), lr=learning_rate, weight_decay=1e-5) # setup optimizer
-    net = net.to(device) # load the network onto the device
-    trainloss_list = [] # metrics: MSE, size equals to EPOCH
-    # repeat the training for EPOCH times
-    for epoch in range(epochs):
-        ## training phase
-        net.train()
-        # initial loss
-        train_epoch_loss = 0.0 # save loss for each epoch, batch by batch
-        for i, (X_train, y_train) in enumerate(train_dl):
-            X_train, y_train = X_train.to(device), y_train.to(device) # load data onto the device
-            y_train_pred  = net(X_train) # train result
-            #train_loss = criterion(y_train_pred, y_train.unsqueeze(1).float()) # calculate loss
-            train_loss = criterion(y_train_pred, y_train.float())
-            optimizer.zero_grad() # clear gradients
-            train_loss.backward() # backpropagation
-            #### add this if you have gradient explosion problem ###
-            clip_value = 5
-            tch.nn.utils.clip_grad_value_(net.parameters(), clip_value)
-            ###   climp gradient within -5 ~ 5  ####################
-            optimizer.step() # update weights
-            train_epoch_loss += train_loss.item() # adding loss from each batch
-        # calculate total loss of all batches
-        trainloss_list.append( train_epoch_loss / len(train_dl) )
-        # display print message
-        #print('epoch={:}/{:}, train loss={:.5f}'.format(
-        #       epoch+1, epochs, train_epoch_loss / len(train_dl)))
-    return net
-
 def predict(net, test_dl, device):
     """
     Return prediction list
@@ -281,7 +246,6 @@ if __name__ == "__main__":
         net.apply(init_weights)
         # fit data with model
         trained_net, train_loss_list, valid_loss_list = fit(net, train_dl, valid_dl, epoch, learning_rate, device, opt_fn)
-        #prediction_list  = myfit.predict(trained_net, valid_dl, device)
         prediction_list = predict(trained_net, test_dl, device)
         # evaluation metrics
         mse = skmts.mean_squared_error(ytest_arr, prediction_list)
@@ -292,13 +256,7 @@ if __name__ == "__main__":
             best_model = trained_net
             print('best model so far at fold={:}, rmse={:}'.format(best_fold, best_rmse))
         rmse_list.append(rmse)
-        #r_square = skmts.r2_score(ytest_arr, prediction_list)
-        #pcc, pval = scistat.pearsonr(ytest_arr, prediction_list)
-        #print('Fold={:}, MSE={:}, RMSE={:}, R2={:}, PCC={:}'.format(
-        #       n_fold, mse, rmse, r_square, pcc))
-        
-        #print( '[Finished in {:}]'.format(myutil.cal_time(datetime.now(), start_time)) )
-        
+     
         if args.shap_bool == True:
             print('calculate shapely values')
             # random select 100 samples as baseline
@@ -310,6 +268,7 @@ if __name__ == "__main__":
             shap_df = pd.DataFrame(shap_arr, index=ytest_df.index, columns=X_df.columns)
             # append to result
             shap_df_list.append(shap_df)
+            
         # collect result
         loss_df = pd.DataFrame({'fold':[n_fold]*len(train_loss_list), 
                                 'epoch':[i+1 for i in range(len(train_loss_list))],
@@ -319,17 +278,12 @@ if __name__ == "__main__":
         ytest_df['fold'] = n_fold
         loss_df_list.append(loss_df)
         ytest_df_list.append(ytest_df)
-        #score_df_list.append( (n_fold, mse, rmse, r_square, pcc, np.mean(train_loss_list), np.mean(valid_loss_list)) )
-
         # end of fold
         trained_net = None
 
     # save to output
-    #all_score_df = pd.DataFrame.from_records(score_df_list, 
-    #               columns=['fold', 'mse', 'rmse', 'r-square', 'pcc', 'avg. train loss', 'avg. valid loss'])
     all_ytest_df = pd.concat(ytest_df_list, axis=0)
     all_loss_df = pd.concat(loss_df_list, axis=0)
-    #all_score_df.to_csv(args.output_path + '.FNN.cv_' + str(args.cv_int) + '.Metrices.txt', header=True, index=False, sep="\t")
     all_ytest_df.to_csv(args.output_path + '.FNN.cv_' + str(args.cv_int) + '.Prediction.txt', header=True, index=True, sep="\t")
     all_loss_df.to_csv(args.output_path + '.FNN.cv_' + str(args.cv_int) + '.Loss.txt', header=True, index=False, sep="\t")
     if args.shap_bool == True:
@@ -337,10 +291,7 @@ if __name__ == "__main__":
         all_shap_df.to_csv(args.output_path + '.FNN.cv_' + str(args.cv_int) + '.SHAP.txt', header=True, index=True, sep="\t")
 
     # make train/valid loss plots
-    #myplot.plot_loss(all_loss_df, args.output_path, cv=True)
     tch.save(best_model.state_dict(), args.output_path + '.FNN.cv_' + str(args.cv_int) + 'best_model.pt')
     print( '[Finished in {:}]'.format(myutil.cal_time(datetime.now(), start_time)) )
     # display evaluation metrics of all folds
     mse, rmse, r_square, pccy = mymts.eval_regressor_performance(all_ytest_df, 'resp', 'prediction')
-    # rmse on each folds
-    print('average RMSE of each folds={:}'.format(np.mean(rmse_list)))
