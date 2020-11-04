@@ -206,7 +206,6 @@ if __name__ == "__main__":
     best_rmse = 10000
     best_model = None
     best_fold = 0
-    rmse_list = []
     for i, (train_index, test_index) in enumerate(kf.split(X_df, y_df)):
         n_fold = i+1
         print('Fold={:}/{:}'.format(n_fold, args.cv_int))
@@ -255,7 +254,7 @@ if __name__ == "__main__":
             best_fold = n_fold
             best_model = trained_net
             print('best model so far at fold={:}, rmse={:}'.format(best_fold, best_rmse))
-        rmse_list.append(rmse)
+        
      
         if args.shap_bool == True:
             print('calculate shapely values')
