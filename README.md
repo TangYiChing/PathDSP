@@ -3,10 +3,17 @@ Explainable Drug Sensitivity Prediction through Cancer Pathway Enrichment Scores
 
 # Requirments
 
+# Input format
+
+|drug|cell|feature1|....|feature2|resp|
+|----|----|--------|----|--------|----|
+|5-FU|03|0|....|0.02|-2.3|
+|5-FU|23|1|....|0.04|-3.4|
+
 # Usage:
 ```python
 # run FNN 
-python FNN.py -i example_data.txt -g 0 -o ./example_output
+python FNN.py -i example_data.txt -o ./example_output
 ```
 
 
