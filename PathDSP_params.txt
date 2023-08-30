@@ -1,23 +1,40 @@
 [Global_Params]
-data_url="http://drugcell.ucsd.edu/downloads/"
-original_data="data.tgz"
-CUDA_ID = 0
-load = "drugcell_v1.pt"
-train_data = "../data/drugcell_train.txt"
-test_data = "../data/drugcell_test.txt"
-val_data = "../data/drugcell_val.txt"
-onto = "drugcell_ont.txt"
+
+model_name='PathDSP'
+data_url='https://zenodo.org/record/6093818/files/'
+improve_data_url='https://ftp.mcs.anl.gov/pub/candle/public/improve/benchmarks/single_drug_drp/benchmark-data-pilot1/csa_data/raw_data/'
+original_data_url='https://zenodo.org/record/7532963/files/'
+original_data='input.zip'
+gene_set = 'MSigdb.zip'
+ppi_data = 'STRING.zip'
+drug_target = 'raw_data.zip'
+train_data = 'PathDSP_train.txt'
+test_data = 'PathDSP_test.txt'
+val_data = 'PathDSP_val.txt'
+drug_bits_file='drug_mbit_df.txt'
+dgnet_file='DGnet.txt'
+mutnet_file='MUTnet.txt'
+cnvnet_file='CNVnet.txt'
+exp_file='EXP.txt'
+#output='Result/'
+bit_int=128
+permutation_int=3
+metric='auc'
+data_type='CTRPv2'
+split=0
+
+
+#Model parameter
+seed_int=42
+cpu_int=20
+#cv_int=1
+gpu_int=0
 learning_rate = 0.001
-batch_size = 1000
-genotype_hiddens = 6
+batch_size = 12
+eps=0.00001
 drug_hiddens='100,50,6'
 final_hiddens=6
-genotype="cell2mutation.txt"
-fingerprint='drug2fingerprint.txt'
-cell2id='../data/cell2ind.txt'
-drug2id='../data/drug2ind.txt'
-output_dir = "MODEL"
-epochs=200
-optimizer = "adam"
-loss = "mse"
-predict="drugcell_all.txt"
+epochs=800
+optimizer = 'adam'
+loss = 'mse'
+improve_analysis='yes'

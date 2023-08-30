@@ -1,0 +1,55 @@
+Bootstrap: docker
+From: pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime 
+
+%labels
+	MANTAINER Yuanhang Liu
+
+%setup
+	cp ./src/Singularity_gpu_fix.sh $SINGULARITY_ROOTFS
+	# add local url of this repository for testing
+
+
+%environment
+	PATH=$PATH:/usr/local/PathDSP
+	MODEL_DIR=/usr/local/PathDSP
+	CANDLE_DATA_DIR=/candle_data_dir
+
+%post
+	apt-get update -y
+	apt-get install wget -y
+	apt-get install -y gnupg
+	apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys F60F4B3D7FA2AF80
+        apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys A4B469963BF863CC
+
+	apt-get install build-essential -y
+	apt-get install git -y
+	apt-get install vim -y
+	apt-get install subversion -y
+
+	# install gpu fix and clean up
+	cd /
+	chmod +x Singularity_gpu_fix.sh
+        ./Singularity_gpu_fix.sh
+	rm Singularity_gpu_fix.sh
+
+        # these three need to be compiled and linked to the cuda libs.
+        # at the moment, what works for me is to build these in a
+        # singularity shell in a sandbox with the --nv flag to singularity set.
+
+
+	# create default internal candle_data_dir, map external candle_data_dir here
+	mkdir /candle_data_dir
+
+	#install python modules and model prerequites
+	cd /usr/local
+	git clone -b develop https://github.com/Liuy12/PathDSP.git
+	cd PathDSP
+
+	# download conda
+	
+	/opt/conda/bin/conda env create -f environment_082223.yml --prefix /usr/local/conda_envs/PathDSP_env/
+	#/opt/conda/bin/conda activate PathDSP_env
+	/usr/local/conda_envs/PathDSP_env/bin/pip install git+https://github.com/ECP-CANDLE/candle_lib@develop
+
+	#cp *.sh /usr/local/bin
+	chmod a+x /usr/local/PathDSP/*.sh
