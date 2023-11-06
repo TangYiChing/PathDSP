@@ -13,6 +13,7 @@ import polars as pl
 import sklearn.metrics as skmts
 #sys.path.append("/usr/local/PathDSP/PathDSP")
 sys.path.append("/usr/local/PathDSP/PathDSP")
+sys.path.append(os.getcwd() + "/PathDSP")
 import FNN_new
 
 
@@ -47,16 +48,16 @@ def initialize_parameters():
 
     
 def run(params):
-    trained_net = FNN_new.mynet.FNN(Xtest_arr.shape[1])
-    trained_net.load_state_dict(tch.load(params['data_dir'] + '/model.pt'))
-    trained_net.eval()
     test_df = pl.read_csv(params['test_data'], separator = "\t").to_pandas()
-    FNN_new.myutil.set_seed(params["seed_int"])
-    device = FNN_new.myutil.get_device(uth=params["gpu_int"])
     Xtest_arr = test_df.iloc[:, 0:-1].values
     ytest_arr = test_df.iloc[:, -1].values
     Xtest_arr = np.array(Xtest_arr).astype('float32')
     ytest_arr = np.array(ytest_arr).astype('float32')
+    trained_net = FNN_new.mynet.FNN(Xtest_arr.shape[1])
+    trained_net.load_state_dict(tch.load(params['data_dir'] + '/model.pt'))
+    trained_net.eval()
+    FNN_new.myutil.set_seed(params["seed_int"])
+    device = FNN_new.myutil.get_device(uth=params["gpu_int"])
     test_dataset = FNN_new.mydl.NumpyDataset(tch.from_numpy(Xtest_arr), tch.from_numpy(ytest_arr))
     test_dl = tchud.DataLoader(test_dataset, batch_size=params['batch_size'], shuffle=False)
     start = datetime.now()

@@ -10,7 +10,7 @@ Train a neural network for regression task:
 Calculate RMSE at once, Oct. 3, 2020 revised
 """
 
-
+import os
 import argparse
 import numpy as np
 import pandas as pd
@@ -84,7 +84,7 @@ def fit(net, train_dl, valid_dl, epochs, learning_rate, device, opt_fn):
     trainloss_list = [] # metrics: MSE, size equals to EPOCH
     validloss_list = [] # metrics: MSE, size equals to EPOCH
     validr2_list = [] # metrics: r2, size equals to EPOCH
-    early_stopping = myutil.EarlyStopping(patience=30, verbose=True) # initialize the early_stopping
+    early_stopping = myutil.EarlyStopping(patience=30, verbose=True, path= os.environ.get("CANDLE_DATA_DIR") + "/Data/checkpoint.pt") # initialize the early_stopping
     # repeat the training for EPOCH times
     start_total = datetime.now()
     for epoch in range(epochs):
@@ -143,7 +143,7 @@ def fit(net, train_dl, valid_dl, epochs, learning_rate, device, opt_fn):
     
     print('Total time (all epochs) :[Finished in {:}]'.format(cal_time(datetime.now(), start_total)))
     # load the last checkpoint with the best model
-    net.load_state_dict(tch.load('checkpoint.pt'))
+    net.load_state_dict(tch.load(os.environ.get('CANDLE_DATA_DIR') + '/Data/checkpoint.pt'))
 
     return  net, trainloss_list, validloss_list, validr2_list
 

@@ -1,5 +1,3 @@
-#!/homes/ac.rgnanaolivu/miniconda3/envs/rohan_python/bin/python
-
 import sys
 import os
 import numpy as np
@@ -31,8 +29,7 @@ import RWR as rwr
 import NetPEA as pea
 #import gsea module
 import gseapy as gp
-
-
+import sklearn.model_selection as skms
 
 
 file_path = os.path.dirname(os.path.realpath(__file__))
@@ -156,11 +153,19 @@ def cal_time(end, start):
 
 
 def download_author_data(params):
-    data_download_filepath = candle.get_file(params['original_data'], params['original_data_url'] + '/' + params['original_data'],
+    data_download_filepath = candle.file_utils.get_file(params['original_data'], params['original_data_url'] + '/' + params['original_data'],
                                              datadir = params['data_dir'],
                                              cache_subdir = None)
     print('download_path: {}'.format(data_download_filepath))
-
+    random_seed = 42
+    df = pd.read_csv(params['data_dir'] + "/input.txt", sep='\t')  # Modify the separator if needed
+    df = df.set_index(['drug', 'cell'])
+    train_data, temp_data = skms.train_test_split(df, test_size=0.2, random_state=random_seed)
+    val_data, test_data = skms.train_test_split(temp_data, test_size=0.5, random_state=random_seed)
+    pl.from_pandas(train_data).write_csv(params['train_data'], separator = '\t', has_header = True)
+    pl.from_pandas(val_data).write_csv(params['val_data'], separator = '\t', has_header = True)
+    pl.from_pandas(test_data).write_csv(params['test_data'], separator = '\t', has_header = True)
+    
 
 def smile2bits(params):
     start = datetime.now()
@@ -370,7 +375,7 @@ def candle_main(anl):
     params = initialize_parameters()
     data_dir = os.environ['CANDLE_DATA_DIR'] + '/' + '/Data/'
     params =  preprocess(params, data_dir)
-    if params['improve_analysis'] == 'yes' or anl:
+    if params['improve_analysis'] == 'yes' or anl == 1:
         download_anl_data(params)
         print('convert drug to bits.')
         smile2bits(params)
@@ -390,7 +395,8 @@ def candle_main(anl):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('-a', dest='anl',  default=False)
+    parser.add_argument('-a', dest='anl', type=int, default=0, help='''whether to perform preprocessing using anl data or directly use processed 
+                        data from the original paper, default to 0 to use processed data from original paper''')
     args = parser.parse_args()
     start = datetime.now()
     candle_main(args.anl)

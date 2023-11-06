@@ -42,7 +42,7 @@ From: pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime
 
 	#install python modules and model prerequites
 	cd /usr/local
-	git clone -b develop https://github.com/Liuy12/PathDSP.git
+	git clone -b develop https://github.com/JDACS4C-IMPROVE/PathDSP.git
 	cd PathDSP
 
 	# download conda

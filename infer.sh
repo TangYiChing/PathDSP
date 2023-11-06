@@ -1,5 +1,7 @@
 #!/bin/bash
-  
+
+#!/bin/bash
+
 #########################################################################
 ### THIS IS A TEMPLATE FILE. SUBSTITUTE #PATH# WITH THE MODEL EXECUTABLE.
 #########################################################################
@@ -10,8 +12,7 @@
 # arg 3 CANDLE_CONFIG
 
 ### Path to your CANDLEized model's main Python script###
-
-CANDLE_MODEL=preprocess_new.py
+CANDLE_MODEL=infer.py
 
 if [ $# -lt 2 ] ; then
     echo "Illegal number of parameters"
@@ -32,18 +33,19 @@ elif [ $# -ge 3 ] ; then
     # if original $3 is a file, set candle_config and passthrough $@
     if [ -f $CANDLE_DATA_DIR/$1 ] ; then
 	echo "$CANDLE_DATA_DIR/$1 is a file"
-        CANDLE_CONFIG=$1 ; shift
-        CMD="python ${CANDLE_MODEL} --config_file $CANDLE_CONFIG $@"
-        echo "CMD = $CMD"
+	CANDLE_CONFIG=$1 ; shift
+	CMD="python ${CANDLE_MODEL} --config_file $CANDLE_CONFIG $@"
+	echo "CMD = $CMD $@"
 
-        # else passthrough $@
+	# else passthrough $@
     else
 	echo "$1 is not a file"
-        CMD="python ${CANDLE_MODEL} $@"
-        echo "CMD = $CMD"
-	
+	CMD="python ${CANDLE_MODEL} $@"
+	echo "CMD = $CMD"
+
     fi
 fi
+
 
 
 # Display runtime arguments
@@ -53,7 +55,6 @@ echo "using CANDLE_CONFIG ${CANDLE_CONFIG}"
 
 # Set up environmental variables and execute model
 echo "activating environment"
-#source /opt/conda/etc/profile.d/conda.sh
 source activate /usr/local/conda_envs/PathDSP_env
 echo "running command ${CMD}"
 CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES} CANDLE_DATA_DIR=${CANDLE_DATA_DIR} $CMD

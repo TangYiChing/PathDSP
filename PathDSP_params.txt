@@ -37,4 +37,4 @@ final_hiddens=6
 epochs=800
 optimizer = 'adam'
 loss = 'mse'
-improve_analysis='yes'
+improve_analysis='no'

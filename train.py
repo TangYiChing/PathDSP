@@ -6,6 +6,7 @@ import sys
 from preprocess_new import mkdir, preprocess
 #sys.path.append("/usr/local/PathDSP/PathDSP")
 sys.path.append("/usr/local/PathDSP/PathDSP")
+sys.path.append(os.getcwd() + "/PathDSP")
 import FNN_new
 
 file_path = os.path.dirname(os.path.realpath(__file__))

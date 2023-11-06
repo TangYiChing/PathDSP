@@ -35,7 +35,7 @@ improve_globals = types.SimpleNamespace()
 # TODO:
 # This is CANDLE_DATA_DIR (or something...).
 # How this is going to be passed to the code?
-improve_globals.main_data_dir = PosixPath("/candle_data_dir/csa_data/")
+improve_globals.main_data_dir = PosixPath(os.environ.get("CANDLE_DATA_DIR") + "/csa_data/")
 # improve_globals.main_data_dir = fdir/"improve_data_dir"
 # imp_globals.main_data_dir = fdir/"candle_data_dir"
 
