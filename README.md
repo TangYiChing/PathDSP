@@ -1,60 +1,48 @@
 # PathDSP
 Explainable Drug Sensitivity Prediction through Cancer Pathway Enrichment Scores
 
-# Example usage with singularity container
-Setup Singularity
+# Download benchmark data
+
+Download the cross-study analysis (CSA) benchmark data into the model directory from https://web.cels.anl.gov/projects/IMPROVE_FTP/candle/public/improve/benchmarks/single_drug_drp/benchmark-data-pilot1/
 
 ```
-git clone -b develop https://github.com/JDACS4C-IMPROVE/Singularity.git
-cd Singularity
-./setup
-source config/improve.env
+mkdir process_dir
+cd process_dir
+wget --cut-dirs=7 -P ./ -nH -np -m ftp://ftp.mcs.anl.gov/pub/candle/public/improve/benchmarks/single_drug_drp/benchmark-data-pilot1/csa_data
 ```
 
-Build Singularity from definition file
+Benchmarmakr data will be downladed under `process_dir/csa_data/`
+
+# Download author data
 
 ```
-singularity build --fakeroot PathDSP.sif definitions/PathDSP.def
+mkdir author_data
+cd author_data
+wget https://zenodo.org/record/6093818/files/MSigdb.zip
+wget https://zenodo.org/record/6093818/files/raw_data.zip
+wget https://zenodo.org/record/6093818/files/STRING.zip
+unzip MSigdb.zip
+unzip raw_data.zip
+unzip STRING.zip
 ```
 
-Perform preprocessing step using processed data from original paper
-
-```
-singularity exec --nv --pwd /usr/local/PathDSP/ --bind ${IMPROVE_DATA_DIR}:/candle_data_dir PathDSP.sif preprocess.sh 0 /candle_data_dir "-a 0"
-```
-
-Alternatively, perform preprocessing step using raw data from IMPROVE project
-
-```
-singularity exec --nv --pwd /usr/local/PathDSP/ --bind ${IMPROVE_DATA_DIR}:/candle_data_dir PathDSP.sif preprocess.sh 0 /candle_data_dir "-a 1"
-```
-
-Train the model
-
-```
-singularity exec --nv --pwd /usr/local/PathDSP/ --bind ${IMPROVE_DATA_DIR}:/candle_data_dir PathDSP.sif train.sh 0 /candle_data_dir
-```
-
-Metrics regarding training process is located at: `${IMPROVE_DATA_DIR}/Data/Loss.txt`
-Final trained model is located at: `${IMPROVE_DATA_DIR}/Data/model.pt`
-
-Perform inference on the testing data
-
-```
-singularity exec --nv --pwd /usr/local/PathDSP/ --bind ${IMPROVE_DATA_DIR}:/candle_data_dir PathDSP.sif infer.sh 0 /candle_data_dir
-```
-
-Metrics regarding training process is located at: `${IMPROVE_DATA_DIR}/Data/Loss_pred.txt`
-Final prediction on testing data is located at: `${IMPROVE_DATA_DIR}/Data/Prediction.txt`
+Author data will be downloaded under `process_dir/author_data/`
 
 # Example usage with Conda
 
-Download PathDSP
+Download PathDSP and IMPROVE
 
 ```
+cd ../
+mkdir repo
+cd repo
 git clone -b develop https://github.com/JDACS4C-IMPROVE/PathDSP.git
+git clone -b develop https://github.com/JDACS4C-IMPROVE/IMPROVE.git
 cd PathDSP
 ```
+
+PathDSP will be installed at `process_dir/repo/PathDSP`
+IMPROVE will be installed at `process_dir/repo/IMPROVE`
 
 Create environment
 
@@ -68,43 +56,48 @@ Activate environment
 conda activate PathDSP_env
 ```
 
-Intall CANDLE package
+Install CANDLE package
 
 ```
 pip install git+https://github.com/ECP-CANDLE/candle_lib@develop
 ```
 
-Perform preprocessing step using processed data from original paper
+Define enviroment variabels
 
 ```
-export CUDA_VISIBLE_DEVICES=0
-export CANDLE_DATA_DIR=./Data/
-bash preprocess.sh $CUDA_VISIBLE_DEVICES $CANDLE_DATA_DIR "-a 0"
+improve_lib="/path/to/IMPROVE/repo/"
+pathdsp_lib="/path/to/pathdsp/repo/"
+# notice the extra PathDSP folder after pathdsp_lib
+export PYTHONPATH=$PYTHONPATH:${improve_lib}:${pathdsp_lib}/PathDSP/export IMPROVE_DATA_DIR="/path/to/csa_data/"
+export AUTHOR_DATA_DIR="/path/to/author_data/"
 ```
 
-Alternatively, perform preprocessing step using raw data from IMPROVE project
+Perform preprocessing step
 
 ```
-bash preprocess.sh $CUDA_VISIBLE_DEVICES $CANDLE_DATA_DIR "-a 1"
+# go two upper level
+cd ../../
+python repo/PathDSP/PathDSP_preprocess_improve.py
 ```
 
 Train the model
 
 ```
-bash train.sh $CUDA_VISIBLE_DEVICES $CANDLE_DATA_DIR
+python repo/PathDSP/PathDSP_train_improve.py
 ```
 
-Metrics regarding training process is located at: `${CANDLE_DATA_DIR}/Data/Loss.txt`
-Final trained model is located at: `${CANDLE_DATA_DIR}/Data/model.pt`
+Metrics regarding validation scores is located at: `${train_ml_data_dir}/val_scores.json`
+Final trained model is located at: `${train_ml_data_dir}/model.pt`. Parameter definitions can be found at `process_dir/repo/PathDSP/PathDSP_default_model.txt`
 
 Perform inference on the testing data
 
 ```
-bash infer.sh $CUDA_VISIBLE_DEVICES $CANDLE_DATA_DIR
+python PathDSP_infer_improve.py
 ```
 
-Metrics regarding training process is located at: `${CANDLE_DATA_DIR}/Data/Loss_pred.txt`
-Final prediction on testing data is located at: `${CANDLE_DATA_DIR}/Data/Prediction.txt`
+Metrics regarding test process is located at: `${infer_outdir}/test_scores.json`
+Final prediction on testing data is located at: `${infer_outdir}/test_y_data_predicted.csv`
+
 
 # Docs from original authors (below)
 

@@ -1,6 +1,15 @@
 [Global_Params]
-
 model_name='PathDSP'
+
+[Preprocess]
+train_split_file = "gCSI_split_0_train.txt"
+val_split_file = "gCSI_split_0_val.txt"
+test_split_file = "gCSI_split_0_test.txt"
+ml_data_outdir = "./ml_data/gCSI-gCSI/split_0"
+x_data_canc_files = [["cancer_gene_expression.tsv", ["Gene_Symbol"]], ["cancer_mutation_count.tsv",["Gene_Symbol"]], ["cancer_discretized_copy_number.tsv", ["Gene_Symbol"]]]
+x_data_drug_files = [["drug_SMILES.tsv"]]
+y_data_files = [["response.tsv"]]
+
 data_url='https://zenodo.org/record/6093818/files/'
 improve_data_url='https://ftp.mcs.anl.gov/pub/candle/public/improve/benchmarks/single_drug_drp/benchmark-data-pilot1/csa_data/raw_data/'
 original_data_url='https://zenodo.org/record/7532963/files/'
@@ -8,6 +17,7 @@ original_data='input.zip'
 gene_set = 'MSigdb.zip'
 ppi_data = 'STRING.zip'
 drug_target = 'raw_data.zip'
+raw_data_dir = "raw_data"
 train_data = 'PathDSP_train.txt'
 test_data = 'PathDSP_test.txt'
 val_data = 'PathDSP_val.txt'
@@ -19,6 +29,7 @@ exp_file='EXP.txt'
 #output='Result/'
 bit_int=128
 permutation_int=3
+y_col_name = 'auc'
 metric='auc'
 data_type='CTRPv2'
 split=0
