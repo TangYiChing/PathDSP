@@ -1,0 +1,6 @@
+1. Expose parameters - give up on private crap
+2. Fix params file
+3. Document on docs
+4. Use R script to make preprocess.sh
+5. make train script
+6. make infer script
