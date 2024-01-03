@@ -102,6 +102,38 @@ def predicting(model, device, data_loader):
             total_labels = tch.cat((total_labels, data_y.view(-1, 1).cpu()), 0)  # labels to tensor
     return total_labels.numpy().flatten(), total_preds.numpy().flatten()
 
+
+def predict(net, device, test_dl):
+    """
+    Return prediction list
+
+    :param net: model
+    :param train_dl: train dataloader
+    :param device: string representing cpu or cuda:0
+    """
+    # create result lists
+    prediction_list = list()
+    true_list = list()
+
+    with tch.no_grad():
+        net = net.to(device) # load the network onto the device
+        net.eval()
+        for i, (X_test, y_test) in enumerate(test_dl):
+            X_test, y_test = X_test.to(device), y_test.to(device) # load data onto the device
+            y_test_pred  = net(X_test) # test result
+            # bring data back to cpu in np.array format, and append to result lists
+            prediction_list.append( y_test_pred.cpu().numpy() )
+            true_list.append(y_test.cpu().numpy())
+            #print(prediction_list)
+
+    # merge all batches
+    prediction_list  = np.vstack(prediction_list)
+    prediction_list = np.hstack(prediction_list).tolist()
+    true_list  = np.vstack(true_list)
+    true_list = np.hstack(true_list).tolist()
+    # return
+    return true_list, prediction_list
+
 def r2_score(y_true, y_pred):
     y_mean = np.mean(y_true)
     ss_tot = np.sum((y_true - y_mean)**2)
@@ -223,8 +255,8 @@ def run(params):
     # [PathDSP] Prepare dataloaders
     # ------------------------------------------------------
     print('loadinig data')
-    train_df = pl.read_csv(params['train_data'], separator = "\t").to_pandas()
-    val_df = pl.read_csv(params['val_data'], separator = "\t").to_pandas()
+    train_df = pl.read_csv(params["train_ml_data_dir"] + "/" + train_data_fname, separator = "\t").to_pandas()
+    val_df = pl.read_csv(params["val_ml_data_dir"] + "/" + val_data_fname, separator = "\t").to_pandas()
     Xtrain_arr = train_df.iloc[:, 0:-1].values
     Xvalid_arr = val_df.iloc[:, 0:-1].values
     ytrain_arr = train_df.iloc[:, -1].values
@@ -267,9 +299,10 @@ def run(params):
     # make train/valid loss plots
     best_model = trained_net
     tch.save(best_model.state_dict(), modelpath)
-    best_model.eval()
+    #best_model.eval()
     # Compute predictions
-    val_true, val_pred = predicting(best_model, device, data_loader=valid_dl) # (groud truth), (predictions)
+    #val_true, val_pred = predicting(best_model, device, valid_dl) # (groud truth), (predictions)
+    val_true, val_pred = predict(best_model, device, valid_dl) # (groud truth), (predictions)
 
     # -----------------------------
     # [Req] Save raw predictions in dataframe
@@ -291,13 +324,14 @@ def run(params):
     return val_scores
 
 
-def main():
+def main(args):
     additional_definitions = model_preproc_params + \
                             model_train_params + \
                             app_train_params
     params = frm.initialize_parameters(
         file_path,
         default_model="PathDSP_default_model.txt",
+        #default_model="PathDSP_cs_model.txt",
         additional_definitions=additional_definitions,
         required=None,
     )
@@ -306,5 +340,5 @@ def main():
 
 if __name__ == "__main__":
     start = datetime.now()
-    main()
+    main(sys.argv[1:])
     print("[Training finished in {:}]".format(cal_time(datetime.now(), start)))

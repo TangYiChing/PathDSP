@@ -1,0 +1,8 @@
+[Global_Params]
+model_name = "CSA_workflow"
+
+[CSA_Workflow]
+raw_data_dir = "raw_data"
+x_data_dir = "x_data"
+y_data_dir = "y_data"
+splits_dir = "splits"

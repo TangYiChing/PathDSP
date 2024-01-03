@@ -43,7 +43,8 @@ model_infer_params = []
 def run(params):
     frm.create_outdir(outdir=params["infer_outdir"])
     params =  preprocess(params)
-    test_df = pl.read_csv(params['test_data'], separator = "\t").to_pandas()
+    test_data_fname = frm.build_ml_data_name(params, stage="test")
+    test_df = pl.read_csv(params["test_ml_data_dir"] + "/" + test_data_fname, separator = "\t").to_pandas()
     Xtest_arr = test_df.iloc[:, 0:-1].values
     ytest_arr = test_df.iloc[:, -1].values
     Xtest_arr = np.array(Xtest_arr).astype('float32')
@@ -69,7 +70,7 @@ def run(params):
     print('Inference time :[Finished in {:}]'.format(cal_time(datetime.now(), start)))
     return test_scores
 
-def main():
+def main(args):
     additional_definitions = model_preproc_params + \
                              model_train_params + \
                              model_infer_params + \
@@ -77,6 +78,7 @@ def main():
     params = frm.initialize_parameters(
         file_path,
         default_model="PathDSP_default_model.txt",
+        #default_model="PathDSP_cs_model.txt",
         additional_definitions=additional_definitions,
         required=None,
     )
@@ -85,4 +87,4 @@ def main():
 
     
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

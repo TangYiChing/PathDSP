@@ -17,6 +17,7 @@ import RWR as rwr
 import NetPEA as pea
 import gseapy as gp
 import sklearn.model_selection as skms
+from sklearn.preprocessing import StandardScaler
 
 
 file_path = Path(__file__).resolve().parent
@@ -119,14 +120,8 @@ def mkdir(directory):
 
 
 def preprocess(params):
-    params["train_data"] = frm.build_ml_data_name(params, 'train')
-    params["val_data"] = frm.build_ml_data_name(params, 'val')
-    params["test_data"] = frm.build_ml_data_name(params, 'test')
     params["author_data_dir"] = os.getenv("AUTHOR_DATA_DIR")
     for i in [
-        "train_data",
-        "test_data",
-        "val_data",
         "drug_bits_file",
         "dgnet_file",
         "mutnet_file",
@@ -420,10 +415,14 @@ def prep_input(params):
             .join(drug_data, on="drug_id")
             .join(sample_data, on="sample_id")
         )
-        comb_data_mtx["response"] = response_df[params["y_col_name"]].values
+        ss = StandardScaler()
+        comb_data_mtx.iloc[:,params["bit_int"]:comb_data_mtx.shape[1]] = ss.fit_transform(comb_data_mtx.iloc[:,params["bit_int"]:comb_data_mtx.shape[1]])
+        ## add 0.01 to avoid possible inf values
+        comb_data_mtx["response"] = np.log10(response_df[params["y_col_name"]].values + 0.01)
         comb_data_mtx = comb_data_mtx.dropna()
         pl.from_pandas(comb_data_mtx).write_csv(
-            params[i + "_data"], separator="\t", has_header=True
+            params["ml_data_outdir"] + "/" + frm.build_ml_data_name(params, i)
+, separator="\t", has_header=True
         )
 
 
@@ -502,10 +501,11 @@ def run(params):
     prep_input(params)
 
 
-def main():
+def main(args):
     params = frm.initialize_parameters(
         file_path,
         default_model="PathDSP_default_model.txt",
+        #default_model="PathDSP_cs_model.txt",
         additional_definitions=preprocess_params,
         required=req_preprocess_args,
     )
@@ -514,5 +514,5 @@ def main():
 
 if __name__ == "__main__":
     start = datetime.now()
-    main()
+    main(sys.argv[1:])
     print("[Preprocessing finished in {:}]".format(cal_time(datetime.now(), start)))
