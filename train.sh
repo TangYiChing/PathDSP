@@ -1,11 +1,10 @@
 #!/bin/bash
-  
-# arg 1 CUDA_VISIBLE_DEVICES
-# arg 2 CANDLE_DATA_DIR
-# arg 3 CANDLE_CONFIG
+
+# arg 1 CANDLE_DATA_DIR
+# arg 2 CANDLE_CONFIG
 
 ### Path to your CANDLEized model's main Python script###
-CANDLE_MODEL=train.py
+CANDLE_MODEL=PathDSP_train_improve.py
 
 ### Set env if CANDLE_MODEL is not in same directory as this script
 IMPROVE_MODEL_DIR=${IMPROVE_MODEL_DIR:-$( dirname -- "$0" )}
@@ -16,65 +15,47 @@ if [ ! -f ${CANDLE_MODEL} ] ; then
     exit 404
 fi
 
-if [ $# -lt 2 ]; then
-    echo "Illegal number of parameters"
-    echo "CUDA_VISIBLE_DEVICES and CANDLE_DATA_DIR are required"
-    exit
+if [ $# -lt 2 ] ; then
+        echo "Illegal number of parameters"
+        echo "CANDLE_DATA_DIR PARAMS are required"
+        exit -1
 fi
 
 if [ $# -eq 2 ] ; then
-    CUDA_VISIBLE_DEVICES=$1 ; shift
-    CANDLE_DATA_DIR=$1 ; shift
-    CMD="python ${CANDLE_MODEL}"
-    echo "CMD = $CMD"
+      
+        CANDLE_DATA_DIR=$1 ; shift
+        
+	# if $2 is a file, then set candle_config
+	if [ -f $CANDLE_DATA_DIR/$1 ] ; then
+ 		CONFIG_FILE=$1 ; shift
+        	CMD="python ${CANDLE_MODEL} --config_file ${CONFIG_FILE}"
+	else
+ 		CMD="python ${CANDLE_MODEL} $@"
+                echo CMD=\"$CMD\"
+        fi
 
-elif [ $# -ge 3 ] ; then
-    CUDA_VISIBLE_DEVICES=$1 ; shift
-    CANDLE_DATA_DIR=$1 ; shift
-    
-    # if original $3 is a file, set candle_config and passthrough $@
-    if [ -f $CANDLE_DATA_DIR/$1 ] ; then
-	echo "$CANDLE_DATA_DIR/$1 is a file"
-        CANDLE_CONFIG=$1 ; shift
-        CMD="python ${CANDLE_MODEL} --config_file $CANDLE_CONFIG $@"
-        echo "CMD = $CMD $@"
+elif [ $# -ge 3 ] ; then 
 
-     # else passthrough $@
-    else
-	echo "$1 is not a file"
-        CMD="python ${CANDLE_MODEL} $@"
-        echo "CMD = $CMD"
-	
-    fi
-fi
+        CANDLE_DATA_DIR=$1 ; shift
 
-if [ -d ${CANDLE_DATA_DIR} ]; then
-    if [ "$(ls -A ${CANDLE_DATA_DIR})" ] ; then
-	echo "using data from ${CANDLE_DATA_DIR}"
-    else
-	./candle_glue.sh
-	echo "using original data placed in ${CANDLE_DATA_DIR}"
-    fi
-fi
+        # if $2 is a file, then set candle_config
+        if [ -f $CANDLE_DATA_DIR/$1 ] ; then
+		echo "$1 is a file"
+                CANDLE_CONFIG=$1 ; shift
+                CMD="python ${CANDLE_MODEL} --config_file $CANDLE_CONFIG $@"
+                echo "CMD = $CMD $@"
 
-export CANDLE_DATA_DIR=${CANDLE_DATA_DIR}
-FULL_DATA_DIR="$CANDLE_DATA_DIR/$MODEL_NAME/Data"
-echo $FULL_DATA_DIR
+        # else passthrough $@
+        else
+		echo "$1 is not a file"
+                CMD="python ${CANDLE_MODEL} $@"
+                echo "CMD = $CMD"
 
-if [ -d ${FULL_DATA_DIR} ]; then
-    if [ "$(ls -A ${FULL_DATA_DIR})" ] ; then
-	echo "using data from ${FULL_DATA_DIR}"
-    else
-	./candle_glue.sh
-	echo "using original data placed in ${FULL_DATA_DIR}"
-    fi
-else
-    ./candle_glue.sh
-    echo "using original data placed in ${FULL_DATA_DIR}"
+        fi
 fi
 
 # Display runtime arguments
-echo "using CUDA_VISIBLE_DEVICES ${CUDA_VISIBLE_DEVICES}"
+#echo "using CUDA_VISIBLE_DEVICES ${CUDA_VISIBLE_DEVICES}"
 echo "using CANDLE_DATA_DIR ${CANDLE_DATA_DIR}"
 echo "using CANDLE_CONFIG ${CANDLE_CONFIG}"
 

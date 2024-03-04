@@ -53,7 +53,11 @@ model_train_params = [
      "default": 0.0001,
      "help": "Learning rate for the optimizer."
     },
-    
+    {"name": "dropout",
+     "type": float,
+     "default": 0.1,
+     "help": "Dropout rate for the optimizer."
+    },
 ]
 
 class RMSELoss(tch.nn.Module):
@@ -282,6 +286,10 @@ def run(params):
     # load model
     n_features = Xtrain_arr.shape[1]
     net = mynet.FNN(n_features)
+    ## specify dropout rate 
+    for module in net.modules():
+        if isinstance(module, tch.nn.Dropout):
+            module.p = params['dropout']
     net.apply(init_weights)
     
     # ------------------------------------------------------

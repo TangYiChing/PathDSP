@@ -26,14 +26,15 @@ val_ml_data_dir = "./ml_data/GDSCv1-GDSCv1/split_4"
 model_outdir = "./out_models/GDSCv1/split_4"
 model_file_name = "model"
 model_file_format = ".pt"
-epochs=800
+epochs=500
 batch_size = 12
 val_batch = 12
 loss = "mse"
 early_stop_metric = "mse"
 patience = 30
-cuda_name = "cuda:2"
+cuda_name = "cuda:0"
 learning_rate = 0.001
+dropout=0.1
 
 [Infer]
 test_ml_data_dir = "./ml_data/GDSCv1-GDSCv1/split_4"

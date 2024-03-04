@@ -99,6 +99,49 @@ python repo/PathDSP/PathDSP_infer_improve.py
 Metrics regarding test process is located at: `${infer_outdir}/test_scores.json`
 Final prediction on testing data is located at: `${infer_outdir}/test_y_data_predicted.csv`
 
+# Example usage with singularity container
+
+Download csa data benchmark data similar as mentioned above. Then download author data into the same directory as csa data. 
+
+Setup Singularity
+
+```
+git clone -b develop https://github.com/JDACS4C-IMPROVE/Singularity.git
+cd Singularity
+./setup
+source config/improve.env
+```
+
+Build Singularity from definition file
+
+```
+singularity build --fakeroot PathDSP.sif definitions/PathDSP.def
+```
+
+Perform preprocessing using csa benchmarking data
+
+```
+singularity exec --nv --bind ${IMPROVE_DATA_DIR}:/candle_data_dir PathDSP.sif preprocess.sh /candle_data_dir --ml_data_outdir /candle_data_dir/preprocess_data/
+```
+
+Train the model
+
+```
+singularity exec --nv --bind ${IMPROVE_DATA_DIR}:/candle_data_dir PathDSP.sif train.sh /candle_data_dir --train_ml_data_dir /candle_data_dir/preprocess_data/ --val_ml_data_dir /candle_data_dir/preprocess_data/ --model_outdir /candle_data_dir/out_model/
+```
+
+Metrics regarding validation scores is located at: `${train_ml_data_dir}/val_scores.json`
+Final trained model is located at: `${train_ml_data_dir}/model.pt`. 
+
+Perform inference on the testing data
+
+```
+singularity exec --nv --bind ${IMPROVE_DATA_DIR}:/candle_data_dir PathDSP.sif infer.sh /candle_data_dir --test_ml_data_dir /candle_data_dir/preprocess_data/ --model_dir /candle_data_dir/out_model/ --infer_outdir /candle_data_dir/out_infer/
+```
+
+Metrics regarding test process is located at: `${infer_outdir}/test_scores.json`
+Final prediction on testing data is located at: `${infer_outdir}/test_y_data_predicted.csv`
+
 
 # Docs from original authors (below)
 
