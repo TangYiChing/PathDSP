@@ -11,42 +11,35 @@ cd process_dir
 wget --cut-dirs=7 -P ./ -nH -np -m ftp://ftp.mcs.anl.gov/pub/candle/public/improve/benchmarks/single_drug_drp/benchmark-data-pilot1/csa_data
 ```
 
-Benchmarmakr data will be downladed under `process_dir/csa_data/`
-
-# Download author data
-
-```
-mkdir author_data
-cd author_data
-wget https://zenodo.org/record/6093818/files/MSigdb.zip
-wget https://zenodo.org/record/6093818/files/raw_data.zip
-wget https://zenodo.org/record/6093818/files/STRING.zip
-unzip MSigdb.zip
-unzip raw_data.zip
-unzip STRING.zip
-```
-
-Author data will be downloaded under `process_dir/author_data/`
+Benchmark data will be downloaded under `process_dir/csa_data/`
 
 # Example usage with Conda
 
 Download PathDSP and IMPROVE
 
 ```
-cd ../
 mkdir repo
 cd repo
 git clone -b develop https://github.com/JDACS4C-IMPROVE/PathDSP.git
 git clone -b develop https://github.com/JDACS4C-IMPROVE/IMPROVE.git
-cd PathDSP
 ```
 
+# Download author data
+
+```
+cd ../
+mkdir author_data
+bash repo/PathDSP/download_author_data.sh author_data/
+```
+
+Author data will be downloaded under `process_dir/author_data/`
 PathDSP will be installed at `process_dir/repo/PathDSP`
 IMPROVE will be installed at `process_dir/repo/IMPROVE`
 
 Create environment
 
 ```
+cd repo/PathDSP/
 conda env create -f environment_082223.yml -n PathDSP_env
 ```
 
@@ -101,7 +94,24 @@ Final prediction on testing data is located at: `${infer_outdir}/test_y_data_pre
 
 # Example usage with singularity container
 
-Download csa data benchmark data similar as mentioned above. Then download author data into the same directory as csa data. 
+# Download benchmark data
+
+Download the cross-study analysis (CSA) benchmark data into the model directory from https://web.cels.anl.gov/projects/IMPROVE_FTP/candle/public/improve/benchmarks/single_drug_drp/benchmark-data-pilot1/
+
+```
+mkdir process_dir
+cd process_dir
+wget --cut-dirs=7 -P ./ -nH -np -m ftp://ftp.mcs.anl.gov/pub/candle/public/improve/benchmarks/single_drug_drp/benchmark-data-pilot1/csa_data
+```
+
+# Download author data
+
+Download model specific data under csa_data/ directory
+
+```
+git clone -b develop https://github.com/JDACS4C-IMPROVE/PathDSP.git
+bash PathDSP/download_author_data.sh csa_data/
+```
 
 Setup Singularity
 
@@ -127,7 +137,7 @@ singularity exec --nv --bind ${IMPROVE_DATA_DIR}:/candle_data_dir PathDSP.sif pr
 Train the model
 
 ```
-singularity exec --nv --bind ${IMPROVE_DATA_DIR}:/candle_data_dir PathDSP.sif train.sh /candle_data_dir --train_ml_data_dir /candle_data_dir/preprocess_data/ --val_ml_data_dir /candle_data_dir/preprocess_data/ --model_outdir /candle_data_dir/out_model/
+singularity exec --nv --bind ${IMPROVE_DATA_DIR}:/candle_data_dir PathDSP.sif train.sh 0 /candle_data_dir --train_ml_data_dir /candle_data_dir/preprocess_data/ --val_ml_data_dir /candle_data_dir/preprocess_data/ --model_outdir /candle_data_dir/out_model/
 ```
 
 Metrics regarding validation scores is located at: `${train_ml_data_dir}/val_scores.json`
@@ -136,7 +146,7 @@ Final trained model is located at: `${train_ml_data_dir}/model.pt`.
 Perform inference on the testing data
 
 ```
-singularity exec --nv --bind ${IMPROVE_DATA_DIR}:/candle_data_dir PathDSP.sif infer.sh /candle_data_dir --test_ml_data_dir /candle_data_dir/preprocess_data/ --model_dir /candle_data_dir/out_model/ --infer_outdir /candle_data_dir/out_infer/
+singularity exec --nv --bind ${IMPROVE_DATA_DIR}:/candle_data_dir PathDSP.sif infer.sh 0 /candle_data_dir --test_ml_data_dir /candle_data_dir/preprocess_data/ --model_dir /candle_data_dir/out_model/ --infer_outdir /candle_data_dir/out_infer/
 ```
 
 Metrics regarding test process is located at: `${infer_outdir}/test_scores.json`
